@@ -1,6 +1,6 @@
 //后台管理页
-
 const express = require('express')
+const bcrypt = require('bcrypt')
 
 //导入用户集合函数
 const {queryUser} = require('../model/user.js')
@@ -17,12 +17,22 @@ admin.get('/article',async (req,res) => {
 
 //登陆路由
 admin.post('/login',async (req,res) => {  
-  const {name,password} = req.body   
+  const {username,password} = req.body   
   // 对登陆信息进行分析
-  if(name.trim().length === 0 ) {return res.status(400).send({message:'登陆名或密码错误'})}
-  let result = await queryUser(name,password)
+  if(username.trim().length === 0 ) {return res.status(400).send({message:'登陆名或密码错误'})}
+  let result = await queryUser(username)  
+  console.log(result);
   if(result.length > 0) {
-    res.send({message:'登陆成功'})
+    const pwd = result[0].password   
+    const isValid = bcrypt.compare(password,pwd)
+    if(isValid) {
+      res.send({message:'登陆成功'})
+    }else {
+      res.status(400).send({message:'登陆名或密码错误'})
+    }
+    
+    
+    
   }else {
     res.status(400).send({message:'登陆名或密码错误'})
   }
